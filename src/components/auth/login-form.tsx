@@ -83,7 +83,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
         <Button 
           type="submit" 
-          className="w-full h-12 text-lg rounded-lg bg-[#0F172A] hover:bg-slate-800 mt-4"
+          className="w-full h-12 text-lg rounded-lg bg-[#0F172A] hover:bg-slate-800 transition-colors cursor-pointer disabled:cursor-not-allowed mt-4"
           disabled={loginMutation.isPending}
         >
           {loginMutation.isPending ? "Entrando..." : "Entrar"}
@@ -95,7 +95,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
         <button 
           onClick={onToggleMode}
           type="button"
-          className="font-bold text-black hover:underline"
+          className="font-bold text-black hover:text-slate-600 hover:underline transition-colors cursor-pointer"
         >
           Criar Conta
         </button>
