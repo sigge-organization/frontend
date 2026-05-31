@@ -29,12 +29,11 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
       return data;
     },
     onSuccess: () => {
-      // Limpa os campos
       setName("");
       setEmail("");
       setPassword("");
       setPasswordRepeat("");
-      onToggleMode(); // Automatically toggle to login mode
+      onToggleMode();
     }
   });
 

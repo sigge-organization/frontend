@@ -11,15 +11,12 @@ export function AuthLayout() {
 
   return (
     <div className="relative flex min-h-screen w-full overflow-hidden bg-white">
-      {/* Sliding Backgrounds Layer */}
       <div className="absolute inset-0 flex pointer-events-none z-0 overflow-hidden">
-        {/* Gray Background */}
         <div 
           className={`absolute inset-y-0 left-0 w-full md:w-1/2 bg-[#F4F6F8] transition-transform duration-700 ease-in-out ${
             !isLogin ? "md:translate-x-full" : ""
           }`} 
         />
-        {/* Blue Background */}
         <div 
           className={`hidden md:block absolute inset-y-0 right-0 w-1/2 bg-[#c8d9f4] transition-transform duration-700 ease-in-out ${
             !isLogin ? "md:-translate-x-full" : ""
@@ -27,7 +24,6 @@ export function AuthLayout() {
         />
       </div>
 
-      {/* Waves Layer - Remains fixed spanning entire screen width */}
       <Image 
         src="/waves.png" 
         alt="Top Wave" 
@@ -45,17 +41,13 @@ export function AuthLayout() {
         className="absolute bottom-0 left-0 w-full h-auto pointer-events-none z-0" 
       />
 
-      {/* Forms Container (Animates left to right) */}
       <div 
         className={`absolute inset-y-0 left-0 w-full md:w-1/2 flex flex-col justify-center px-4 lg:px-20 z-10 transition-transform duration-700 ease-in-out ${
           !isLogin ? "md:translate-x-full" : ""
         }`}
       >
         <div className="relative w-full max-w-md mx-auto">
-          {/* We set a min-height so the card doesn't collapse during transition */}
           <Card className="shadow-2xl rounded-2xl border-none bg-white relative overflow-hidden min-h-[620px] transition-all duration-700">
-            
-            {/* Login Form */}
             <div 
               className={`absolute inset-0 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out ${
                 !isLogin ? "opacity-0 -translate-x-full pointer-events-none" : "opacity-100 translate-x-0"
@@ -64,7 +56,6 @@ export function AuthLayout() {
               <LoginForm onToggleMode={() => setIsLogin(false)} />
             </div>
 
-            {/* Signup Form */}
             <div 
               className={`absolute inset-0 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out ${
                 isLogin ? "opacity-0 translate-x-full pointer-events-none" : "opacity-100 translate-x-0"
@@ -72,19 +63,16 @@ export function AuthLayout() {
             >
               <SignupForm onToggleMode={() => setIsLogin(true)} />
             </div>
-
           </Card>
         </div>
       </div>
 
-      {/* Illustration Container (Animates right to left) */}
       <div 
         className={`hidden md:flex absolute inset-y-0 right-0 w-1/2 flex-col items-center justify-center p-10 z-10 transition-transform duration-700 ease-in-out ${
           !isLogin ? "md:-translate-x-full" : ""
         }`}
       >
         <div className="w-full max-w-2xl flex flex-col items-center space-y-4">
-          {/* Logo */}
           <div className="w-full max-w-[28rem] md:max-w-[36rem] relative h-48 md:h-64">
             <Image
               src="/logo.png"
@@ -95,7 +83,6 @@ export function AuthLayout() {
             />
           </div>
 
-          {/* Illustration */}
           <div className="w-full max-w-xl relative h-[400px]">
             <Image
               src="/login-background.png"

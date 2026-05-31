@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import Cookies from "js-cookie";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +16,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onToggleMode }: LoginFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -26,8 +29,9 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
       return data;
     },
     onSuccess: (data) => {
-      console.log("Login realizado com sucesso", data);
+      Cookies.set("sigee.token", data.token, { expires: 1 });
       toast.success("Login efetuado com sucesso!");
+      router.push("/dashboard");
     },
     onError: (error: AxiosError<{ error: string }>) => {
       toast.error("Falha no login", {
