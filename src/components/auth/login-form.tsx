@@ -1,12 +1,46 @@
+"use client";
+
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { api } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface LoginFormProps {
   onToggleMode: () => void;
 }
 
 export function LoginForm({ onToggleMode }: LoginFormProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const loginMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post("/api/auth/login", {
+        email,
+        password,
+      });
+      return data;
+    },
+    onSuccess: (data) => {
+      console.log("Login realizado com sucesso", data);
+      toast.success("Login efetuado com sucesso!");
+    },
+    onError: (error: AxiosError<{ error: string }>) => {
+      toast.error("Falha no login", {
+        description: error.response?.data?.error || "Ocorreu um erro ao fazer login."
+      });
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate();
+  };
+
   return (
     <>
       <div className="mb-8">
@@ -16,14 +50,17 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
         </p>
       </div>
 
-      <form className="space-y-6">
+      <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <Label htmlFor="email-login">Digite seu E-mail</Label>
           <Input
             id="email-login"
             type="email"
             className="rounded-lg h-12"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loginMutation.isPending}
           />
         </div>
 
@@ -33,12 +70,19 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
             id="password-login"
             type="password"
             className="rounded-lg h-12"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loginMutation.isPending}
           />
         </div>
 
-        <Button type="submit" className="w-full h-12 text-lg rounded-lg bg-[#0F172A] hover:bg-slate-800 mt-4">
-          Entrar
+        <Button 
+          type="submit" 
+          className="w-full h-12 text-lg rounded-lg bg-[#0F172A] hover:bg-slate-800 mt-4"
+          disabled={loginMutation.isPending}
+        >
+          {loginMutation.isPending ? "Entrando..." : "Entrar"}
         </Button>
       </form>
 
