@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,40 +15,45 @@ interface SignupFormProps {
   onToggleMode: () => void;
 }
 
+const signupSchema = z.object({
+  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres."),
+  email: z.string().min(1, "O e-mail é obrigatório.").email("Digite um e-mail válido."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+  passwordRepeat: z.string().min(1, "A confirmação de senha é obrigatória."),
+}).refine((data) => data.password === data.passwordRepeat, {
+  message: "As senhas não coincidem.",
+  path: ["passwordRepeat"],
+});
+
+type SignupFormData = z.infer<typeof signupSchema>;
+
 export function SignupForm({ onToggleMode }: SignupFormProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordRepeat, setPasswordRepeat] = useState("");
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+  });
 
   const registerMutation = useMutation({
-    mutationFn: async () => {
-      const { data } = await api.post("/api/auth/register", {
-        username: name,
-        email,
-        password,
+    mutationFn: async (data: SignupFormData) => {
+      const response = await api.post("/api/auth/register", {
+        username: data.name,
+        email: data.email,
+        password: data.password,
       });
-      return data;
+      return response.data;
     },
     onSuccess: () => {
-      setName("");
-      setEmail("");
-      setPassword("");
-      setPasswordRepeat("");
+      reset();
       onToggleMode();
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password !== passwordRepeat) {
-      toast.error("Erro de validação", {
-        description: "As senhas não coincidem."
-      });
-      return;
-    }
-    
-    toast.promise(registerMutation.mutateAsync(), {
+  const onSubmit = (data: SignupFormData) => {
+    toast.promise(registerMutation.mutateAsync(data), {
       loading: "Cadastrando...",
       success: "Conta criada com sucesso! Você já pode fazer login.",
       error: (error: AxiosError<{ error: string }>) => 
@@ -63,18 +70,19 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
         </p>
       </div>
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-1.5">
           <Label htmlFor="name-signup">Digite seu Nome</Label>
           <Input
             id="name-signup"
             type="text"
-            className="rounded-lg h-11"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
+            className={`rounded-lg h-11 ${errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={registerMutation.isPending}
+            {...register("name")}
           />
+          {errors.name && (
+            <span className="text-red-500 text-xs">{errors.name.message}</span>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -82,12 +90,13 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
           <Input
             id="email-signup"
             type="email"
-            className="rounded-lg h-11"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            className={`rounded-lg h-11 ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={registerMutation.isPending}
+            {...register("email")}
           />
+          {errors.email && (
+            <span className="text-red-500 text-xs">{errors.email.message}</span>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -95,12 +104,13 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
           <Input
             id="password-signup"
             type="password"
-            className="rounded-lg h-11"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            className={`rounded-lg h-11 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={registerMutation.isPending}
+            {...register("password")}
           />
+          {errors.password && (
+            <span className="text-red-500 text-xs">{errors.password.message}</span>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -108,12 +118,13 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
           <Input
             id="password-repeat"
             type="password"
-            className="rounded-lg h-11"
-            value={passwordRepeat}
-            onChange={(e) => setPasswordRepeat(e.target.value)}
-            required
+            className={`rounded-lg h-11 ${errors.passwordRepeat ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={registerMutation.isPending}
+            {...register("passwordRepeat")}
           />
+          {errors.passwordRepeat && (
+            <span className="text-red-500 text-xs">{errors.passwordRepeat.message}</span>
+          )}
         </div>
 
         <Button 

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import Cookies from "js-cookie";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,18 +17,29 @@ interface LoginFormProps {
   onToggleMode: () => void;
 }
 
+const loginSchema = z.object({
+  email: z.string().min(1, "O e-mail é obrigatório.").email("Digite um e-mail válido."),
+  password: z.string().min(1, "A senha é obrigatória."),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 export function LoginForm({ onToggleMode }: LoginFormProps) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
   const loginMutation = useMutation({
-    mutationFn: async () => {
-      const { data } = await api.post("/api/auth/login", {
-        email,
-        password,
-      });
-      return data;
+    mutationFn: async (data: LoginFormData) => {
+      const response = await api.post("/api/auth/login", data);
+      return response.data;
     },
     onSuccess: (data) => {
       Cookies.set("sigee.token", data.token, { expires: 1 });
@@ -34,15 +47,14 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
       router.push("/dashboard");
     },
     onError: (error: AxiosError<{ error: string }>) => {
-      toast.error("Falha no login", {
-        description: error.response?.data?.error || "Ocorreu um erro ao fazer login."
+      setError("root", {
+        message: error.response?.data?.error || "Ocorreu um erro ao fazer login."
       });
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    loginMutation.mutate();
+  const onSubmit = (data: LoginFormData) => {
+    loginMutation.mutate(data);
   };
 
   return (
@@ -54,18 +66,19 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
         </p>
       </div>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-2">
           <Label htmlFor="email-login">Digite seu E-mail</Label>
           <Input
             id="email-login"
             type="email"
-            className="rounded-lg h-12"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            className={`rounded-lg h-12 ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={loginMutation.isPending}
+            {...register("email")}
           />
+          {errors.email && (
+            <span className="text-red-500 text-xs">{errors.email.message}</span>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -73,13 +86,20 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
           <Input
             id="password-login"
             type="password"
-            className="rounded-lg h-12"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            className={`rounded-lg h-12 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={loginMutation.isPending}
+            {...register("password")}
           />
+          {errors.password && (
+            <span className="text-red-500 text-xs">{errors.password.message}</span>
+          )}
         </div>
+
+        {errors.root && (
+          <div className="text-red-500 text-sm font-medium text-center">
+            {errors.root.message}
+          </div>
+        )}
 
         <Button 
           type="submit" 
