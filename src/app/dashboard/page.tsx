@@ -1,12 +1,19 @@
 "use client";
 
+import { useUserProfile } from "@/hooks/hooks";
 import { Card } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
+  const { data: user, isLoading } = useUserProfile();
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Visão Geral</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
+          Seja bem vindo{user?.username ? `, ${user.username}` : ""} 
+          {isLoading ? <Loader2 className="h-5 w-5 animate-spin text-gray-400" /> : " 👋"}
+        </h1>
         <p className="text-gray-500">
           Bem-vindo ao painel principal do SIGGE. Escolha uma das opções no menu acima para começar.
         </p>

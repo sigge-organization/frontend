@@ -68,7 +68,10 @@ describe("LoginForm", () => {
 
   it("should authenticate, set cookie and redirect to dashboard on successful login", async () => {
     (api.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      data: { token: "fake-jwt-token" }
+      data: { 
+        token: "fake-jwt-token",
+        user: { username: "TestUser" }
+      }
     });
 
     renderComponent();
