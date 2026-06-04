@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/services/api";
 
 export interface UserProfile {
@@ -14,6 +14,21 @@ export function useUserProfile() {
     queryKey: ["userProfile"],
     queryFn: async () => {
       const response = await api.get("/api/auth/me");
+      return response.data;
+    },
+  });
+}
+
+export interface UpdateProfileData {
+  username?: string;
+  email?: string;
+  course?: string;
+}
+
+export function useUpdateProfile() {
+  return useMutation({
+    mutationFn: async (data: UpdateProfileData) => {
+      const response = await api.put("/api/auth/profile", data);
       return response.data;
     },
   });
