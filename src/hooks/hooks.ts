@@ -33,3 +33,26 @@ export function useUpdateProfile() {
     },
   });
 }
+
+export interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: async (data: ChangePasswordData) => {
+      const response = await api.put("/api/auth/change-password", data);
+      return response.data;
+    },
+  });
+}
+
+export function useVerifyPassword() {
+  return useMutation({
+    mutationFn: async (currentPassword: string) => {
+      const response = await api.post("/api/auth/verify-password", { currentPassword });
+      return response.data;
+    },
+  });
+}

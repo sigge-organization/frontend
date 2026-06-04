@@ -10,6 +10,7 @@ import { z } from "zod";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
@@ -83,9 +84,8 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="password-login">Digite sua Senha</Label>
-          <Input
+          <PasswordInput
             id="password-login"
-            type="password"
             className={`rounded-lg h-12 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={loginMutation.isPending}
             {...register("password")}

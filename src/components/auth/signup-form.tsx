@@ -2,12 +2,14 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { PasswordStrength } from "@/components/ui/password-strength";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
@@ -32,10 +34,13 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
+
+  const passwordValue = useWatch({ control, name: "password" }) || "";
 
   const registerMutation = useMutation({
     mutationFn: async (data: SignupFormData) => {
@@ -101,13 +106,13 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
 
         <div className="space-y-1.5">
           <Label htmlFor="password-signup">Digite sua Senha</Label>
-          <Input
+          <PasswordInput
             id="password-signup"
-            type="password"
             className={`rounded-lg h-11 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={registerMutation.isPending}
             {...register("password")}
           />
+          <PasswordStrength password={passwordValue} />
           {errors.password && (
             <span className="text-red-500 text-xs">{errors.password.message}</span>
           )}
@@ -115,9 +120,8 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
 
         <div className="space-y-1.5">
           <Label htmlFor="password-repeat">Repita sua Senha</Label>
-          <Input
+          <PasswordInput
             id="password-repeat"
-            type="password"
             className={`rounded-lg h-11 ${errors.passwordRepeat ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={registerMutation.isPending}
             {...register("passwordRepeat")}

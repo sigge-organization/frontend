@@ -62,13 +62,13 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <Button variant="ghost" onClick={handleLogout} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+          <Button variant="ghost" onClick={handleLogout} className="text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer">
             Sair
           </Button>
         </div>
 
         <button
-          className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-md"
+          className="md:hidden p-2 text-muted-foreground hover:bg-muted rounded-md cursor-pointer"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
         >
