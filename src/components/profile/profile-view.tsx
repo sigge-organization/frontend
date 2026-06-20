@@ -15,7 +15,7 @@ export function ProfileView({ user, onEdit, onOpenPasswordModal }: ProfileViewPr
       <div className="flex justify-between items-end mb-8 -mt-12 sm:-mt-16">
         <div className="h-24 w-24 sm:h-32 sm:w-32 bg-white rounded-full p-1.5 shadow-lg relative z-10">
           <div className="h-full w-full bg-[#0F172A] rounded-full flex items-center justify-center text-white text-4xl sm:text-5xl font-bold">
-            {user?.username ? user.username.charAt(0).toUpperCase() : <User className="h-10 w-10" />}
+            {user?.name ? user.name.charAt(0).toUpperCase() : <User className="h-10 w-10" />}
           </div>
         </div>
         
@@ -30,7 +30,7 @@ export function ProfileView({ user, onEdit, onOpenPasswordModal }: ProfileViewPr
 
       <div className="space-y-8">
         <div className="space-y-1">
-          <h2 className="text-2xl font-bold text-gray-900">{user?.username}</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{user?.name}</h2>
         <p className="text-gray-500 flex items-center gap-2">
           <Mail className="h-4 w-4" /> {user?.email}
         </p>

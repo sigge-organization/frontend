@@ -12,7 +12,7 @@ import { useUpdateProfile, UserProfile } from "@/hooks/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 
 const profileSchema = z.object({
-  username: z.string().min(3, "O nome deve ter pelo menos 3 caracteres."),
+  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres."),
   email: z.string().email("Digite um e-mail válido."),
   course: z.string().optional(),
 });
@@ -41,7 +41,7 @@ export function ProfileForm({ user, onCancel }: ProfileFormProps) {
   useEffect(() => {
     if (user) {
       reset({
-        username: user.username,
+        name: user.name,
         email: user.email,
         course: user.course || "",
       });
@@ -69,23 +69,23 @@ export function ProfileForm({ user, onCancel }: ProfileFormProps) {
       <div className="flex justify-between items-end mb-8 -mt-12 sm:-mt-16">
         <div className="h-24 w-24 sm:h-32 sm:w-32 bg-white rounded-full p-1.5 shadow-lg relative z-10">
           <div className="h-full w-full bg-[#0F172A] rounded-full flex items-center justify-center text-white text-4xl sm:text-5xl font-bold">
-            {user?.username ? user.username.charAt(0).toUpperCase() : <User className="h-10 w-10" />}
+            {user?.name ? user.name.charAt(0).toUpperCase() : <User className="h-10 w-10" />}
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="username">Nome Completo</Label>
+          <Label htmlFor="name">Nome Completo</Label>
           <Input
-            id="username"
+            id="name"
             placeholder="Ex: João da Silva"
-            className={`rounded-lg h-12 ${errors.username ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+            className={`rounded-lg h-12 ${errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={updateProfileMutation.isPending}
-            {...register("username")}
+            {...register("name")}
           />
-          {errors.username && (
-            <span className="text-red-500 text-xs">{errors.username.message}</span>
+          {errors.name && (
+            <span className="text-red-500 text-xs">{errors.name.message}</span>
           )}
         </div>
 

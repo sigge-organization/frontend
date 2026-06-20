@@ -3,7 +3,7 @@ import { api } from "@/services/api";
 
 export interface UserProfile {
   id: number;
-  username: string;
+  name: string;
   email: string;
   course?: string;
   created_at: string;
@@ -20,7 +20,7 @@ export function useUserProfile() {
 }
 
 export interface UpdateProfileData {
-  username?: string;
+  name?: string;
   email?: string;
   course?: string;
 }
