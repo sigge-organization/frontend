@@ -7,6 +7,11 @@ export enum GroupModality {
   HYBRID = "HYBRID"
 }
 
+export enum GroupRole {
+  ADMIN = "ADMIN",
+  STUDENT = "STUDENT"
+}
+
 export interface StudyGroup {
   id: string;
   theme: string;
@@ -19,6 +24,7 @@ export interface StudyGroup {
     members: number;
   };
   members?: Array<{
+    role: GroupRole;
     user: {
       id: string;
       name: string | null;
@@ -26,6 +32,7 @@ export interface StudyGroup {
       course: string | null;
     }
   }>;
+  latestActivity?: number | string;
 }
 
 export type CreateStudyGroupDTO = Omit<StudyGroup, 'id' | 'created_at' | '_count' | 'joinCode'> & { password?: string };
@@ -41,6 +48,16 @@ export function useStudyGroups() {
     queryKey: ["studyGroups"],
     queryFn: async () => {
       const response = await api.get("/student-groups");
+      return response.data;
+    },
+  });
+}
+
+export function useRecentStudyGroups() {
+  return useQuery<StudyGroup[]>({
+    queryKey: ["recentStudyGroups"],
+    queryFn: async () => {
+      const response = await api.get("/student-groups/recent");
       return response.data;
     },
   });
@@ -64,8 +81,11 @@ export function useCreateStudyGroup() {
       const response = await api.post("/student-groups", data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["studyGroups"] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["studyGroups"] }),
+        queryClient.invalidateQueries({ queryKey: ["recentStudyGroups"] })
+      ]);
     },
   });
 }
@@ -77,8 +97,11 @@ export function useUpdateStudyGroup() {
       const response = await api.put(`/student-groups/${id}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["studyGroups"] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["studyGroups"] }),
+        queryClient.invalidateQueries({ queryKey: ["recentStudyGroups"] })
+      ]);
     },
   });
 }
@@ -90,8 +113,11 @@ export function useArchiveStudyGroup() {
       const response = await api.delete(`/student-groups/${id}`);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["studyGroups"] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["studyGroups"] }),
+        queryClient.invalidateQueries({ queryKey: ["recentStudyGroups"] })
+      ]);
     },
   });
 }
@@ -103,8 +129,11 @@ export function useJoinStudyGroup() {
       const response = await api.post("/student-groups/join", data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["studyGroups"] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["studyGroups"] }),
+        queryClient.invalidateQueries({ queryKey: ["recentStudyGroups"] })
+      ]);
     },
   });
 }

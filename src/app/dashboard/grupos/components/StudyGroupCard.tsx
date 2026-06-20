@@ -1,4 +1,4 @@
-import { StudyGroup, GroupModality } from "@/hooks/useStudyGroups";
+import { StudyGroup, GroupModality, GroupRole } from "@/hooks/useStudyGroups";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,24 +84,26 @@ export function StudyGroupCard({ group, viewMode, onUpdate, onArchive }: StudyGr
             Acessar Detalhes
           </Button>
         </Link>
-        <div className={`flex gap-2 w-full`}>
-          <Button 
-            variant="outline" 
-            onClick={() => onUpdate(group)}
-            className="flex-1 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border-gray-200 cursor-pointer bg-white"
-            title="Editar Grupo"
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => onArchive(group)}
-            className="flex-1 text-gray-600 hover:text-red-600 hover:bg-red-50 border-gray-200 cursor-pointer bg-white"
-            title="Arquivar Grupo"
-          >
-            <Archive className="h-4 w-4" />
-          </Button>
-        </div>
+        {group.members?.[0]?.role === GroupRole.ADMIN && (
+          <div className={`flex gap-2 w-full`}>
+            <Button 
+              variant="outline" 
+              onClick={() => onUpdate(group)}
+              className="flex-1 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border-gray-200 cursor-pointer bg-white"
+              title="Editar Grupo"
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => onArchive(group)}
+              className="flex-1 text-gray-600 hover:text-red-600 hover:bg-red-50 border-gray-200 cursor-pointer bg-white"
+              title="Arquivar Grupo"
+            >
+              <Archive className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );
