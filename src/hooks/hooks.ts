@@ -13,7 +13,7 @@ export function useUserProfile() {
   return useQuery<UserProfile>({
     queryKey: ["userProfile"],
     queryFn: async () => {
-      const response = await api.get("/api/auth/me");
+      const response = await api.get("/users/me");
       return response.data;
     },
   });
@@ -28,7 +28,7 @@ export interface UpdateProfileData {
 export function useUpdateProfile() {
   return useMutation({
     mutationFn: async (data: UpdateProfileData) => {
-      const response = await api.put("/api/auth/profile", data);
+      const response = await api.put("/users/edit", data);
       return response.data;
     },
   });
@@ -42,7 +42,7 @@ export interface ChangePasswordData {
 export function useChangePassword() {
   return useMutation({
     mutationFn: async (data: ChangePasswordData) => {
-      const response = await api.put("/api/auth/change-password", data);
+      const response = await api.post("/users/change-password", data);
       return response.data;
     },
   });
@@ -51,7 +51,7 @@ export function useChangePassword() {
 export function useVerifyPassword() {
   return useMutation({
     mutationFn: async (currentPassword: string) => {
-      const response = await api.post("/api/auth/verify-password", { currentPassword });
+      const response = await api.post("/users/verify-password", { currentPassword });
       return response.data;
     },
   });

@@ -47,21 +47,23 @@ export function AuthLayout() {
         }`}
       >
         <div className="relative w-full max-w-md mx-auto">
-          <Card className="shadow-2xl rounded-2xl border-none bg-white relative overflow-hidden min-h-[620px] transition-all duration-700">
-            <div 
-              className={`absolute inset-0 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out ${
-                !isLogin ? "opacity-0 -translate-x-full pointer-events-none" : "opacity-100 translate-x-0"
-              }`}
-            >
-              <LoginForm onToggleMode={() => setIsLogin(false)} />
-            </div>
+          <Card className="shadow-2xl rounded-2xl border-none bg-white relative overflow-hidden transition-all duration-700">
+            <div className="grid items-center min-h-[620px]">
+              <div 
+                className={`col-start-1 row-start-1 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out ${
+                  !isLogin ? "opacity-0 -translate-x-full pointer-events-none" : "opacity-100 translate-x-0"
+                }`}
+              >
+                <LoginForm onToggleMode={() => setIsLogin(false)} />
+              </div>
 
-            <div 
-              className={`absolute inset-0 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out ${
-                isLogin ? "opacity-0 translate-x-full pointer-events-none" : "opacity-100 translate-x-0"
-              }`}
-            >
-              <SignupForm onToggleMode={() => setIsLogin(true)} />
+              <div 
+                className={`col-start-1 row-start-1 p-8 flex flex-col justify-center transition-all duration-700 ease-in-out ${
+                  isLogin ? "opacity-0 translate-x-full pointer-events-none" : "opacity-100 translate-x-0"
+                }`}
+              >
+                <SignupForm onToggleMode={() => setIsLogin(true)} />
+              </div>
             </div>
           </Card>
         </div>

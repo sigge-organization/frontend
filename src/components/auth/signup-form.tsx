@@ -44,7 +44,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
 
   const registerMutation = useMutation({
     mutationFn: async (data: SignupFormData) => {
-      const response = await api.post("/api/auth/register", {
+      const response = await api.post("/users/register", {
         username: data.name,
         email: data.email,
         password: data.password,

@@ -39,7 +39,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormData) => {
-      const response = await api.post("/api/auth/login", data);
+      const response = await api.post("/users/login", data);
       return response.data;
     },
     onSuccess: (data) => {
