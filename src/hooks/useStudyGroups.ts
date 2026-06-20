@@ -17,6 +17,14 @@ export interface StudyGroup {
   _count?: {
     members: number;
   };
+  members?: Array<{
+    user: {
+      id: string;
+      name: string | null;
+      email: string;
+      course: string | null;
+    }
+  }>;
 }
 
 export type CreateStudyGroupDTO = Omit<StudyGroup, 'id' | 'created_at' | '_count'>;
@@ -29,6 +37,17 @@ export function useStudyGroups() {
       const response = await api.get("/student-groups");
       return response.data;
     },
+  });
+}
+
+export function useStudyGroup(id: string) {
+  return useQuery<StudyGroup>({
+    queryKey: ["studyGroup", id],
+    queryFn: async () => {
+      const response = await api.get(`/student-groups/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
   });
 }
 

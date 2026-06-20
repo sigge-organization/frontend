@@ -1,4 +1,5 @@
 import { StudyGroup, GroupModality } from "@/hooks/useStudyGroups";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, BookOpen, MapPin, Laptop, GraduationCap, Edit2, Archive } from "lucide-react";
@@ -30,7 +31,7 @@ export function StudyGroupCard({ group, viewMode, onUpdate, onArchive }: StudyGr
   };
 
   return (
-    <Card className={`group hover:shadow-xl transition-all duration-300 border-gray-200/80 bg-white/80 backdrop-blur-sm overflow-hidden flex p-0 ${viewMode === "grid" ? "flex-col hover:-translate-y-1" : "flex-row items-stretch"}`}>
+    <Card className={`group hover:shadow-xl transition-all duration-300 border-gray-200/80 bg-white/80 backdrop-blur-sm overflow-hidden flex p-0 ${viewMode === "grid" ? "flex-col hover:-translate-y-1" : "flex-col md:flex-row items-stretch"}`}>
       <div className={`flex flex-1 min-w-0 ${viewMode === "list" ? "flex-col p-5 justify-center gap-2" : "flex-col"}`}>
         <CardHeader className={`${viewMode === "grid" ? "bg-blue-50/80 border-b border-blue-100/50 p-5 rounded-t-xl" : "p-0 bg-transparent border-none"}`}>
           <div className="flex justify-between items-start gap-4">
@@ -72,10 +73,12 @@ export function StudyGroupCard({ group, viewMode, onUpdate, onArchive }: StudyGr
         </CardContent>
       </div>
 
-      <CardFooter className={`${viewMode === "grid" ? "bg-transparent border-t-0 p-5 pt-0 gap-3 flex flex-col" : "p-5 border-l border-gray-100/50 flex flex-col justify-center gap-3 w-[180px] shrink-0 bg-gray-50/50"}`}>
-        <Button variant="outline" className={`w-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 cursor-pointer shadow-sm bg-white font-medium`}>
-          Acessar Detalhes
-        </Button>
+      <CardFooter className={`${viewMode === "grid" ? "bg-transparent border-t-0 p-5 pt-0 gap-3 flex flex-col" : "p-5 border-t md:border-t-0 md:border-l border-gray-100/50 flex flex-col justify-center gap-3 w-full md:w-[180px] shrink-0 bg-gray-50/50"}`}>
+        <Link href={`/dashboard/grupos/${group.id}`} passHref className="w-full">
+          <Button variant="outline" className={`w-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 cursor-pointer shadow-sm bg-white font-medium`}>
+            Acessar Detalhes
+          </Button>
+        </Link>
         <div className={`flex gap-2 w-full`}>
           <Button 
             variant="outline" 
