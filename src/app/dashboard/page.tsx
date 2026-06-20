@@ -11,7 +11,7 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
-          Seja bem vindo{user?.username ? `, ${user.username}` : ""} 
+          Seja bem vindo{user?.name ? `, ${user.name}` : ""} 
           {isLoading ? <Loader2 className="h-5 w-5 animate-spin text-gray-400" /> : " 👋"}
         </h1>
         <p className="text-gray-500">

@@ -4,16 +4,20 @@ import { useStudyGroup, GroupModality } from "@/hooks/useStudyGroups";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, MapPin, Laptop, Users, GraduationCap, Calendar, BookOpen } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, MapPin, Laptop, Users, GraduationCap, Calendar, BookOpen, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PostsTab } from "./components/PostsTab";
+import { EventsTab } from "./components/EventsTab";
+import { MaterialsTab } from "./components/MaterialsTab";
 
 export default function GroupDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<"posts" | "events" | "materials">("posts");
 
   const { data: group, isLoading, isError } = useStudyGroup(id);
 
@@ -110,59 +114,84 @@ export default function GroupDetailsPage() {
               <Calendar className="h-5 w-5" />
               <span>Criado em {new Date(group.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
             </div>
+
+            <Dialog>
+              <DialogTrigger className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white hover:bg-gray-50 hover:text-gray-900 h-10 px-4 py-2 w-full shadow-sm mt-2">
+                <Users className="h-4 w-4 text-blue-600" />
+                Ver Participantes ({group.members?.length || 0})
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-lg flex items-center gap-2 text-gray-800">
+                    <Users className="h-5 w-5 text-blue-500" />
+                    Participantes do Grupo
+                  </DialogTitle>
+                </DialogHeader>
+                {group.members && group.members.length > 0 ? (
+                  <ul className="divide-y divide-gray-100 mt-2">
+                    {group.members.map((member) => {
+                      const initials = (member.user.name || "UN").substring(0, 2).toUpperCase();
+                      return (
+                      <li key={member.user.id} className="py-3 hover:bg-gray-50 transition-colors flex items-center gap-3 rounded-md px-2">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">
+                          {initials}
+                        </div>
+                        <div className="flex flex-col overflow-hidden">
+                          <span className="font-medium text-gray-900 truncate">{member.user.name || "Usuário sem nome"}</span>
+                          <span className="text-sm text-gray-500 truncate">{member.user.email}</span>
+                          {member.user.course && (
+                            <span className="text-[10px] text-indigo-600 font-medium mt-1 inline-flex w-fit px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-100">
+                              {member.user.course}
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    )})}
+                  </ul>
+                ) : (
+                  <div className="p-6 text-center text-gray-500">
+                    <p>Nenhum participante ainda.</p>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        {/* Participants Sidebar */}
-        <Card className="md:col-span-1 shadow-sm border-gray-200/60 h-fit">
-          <CardHeader className="border-b border-gray-100 pb-4 bg-gray-50/50 rounded-t-xl">
-            <CardTitle className="text-lg flex items-center gap-2 text-gray-800">
-              <Users className="h-5 w-5 text-blue-500" />
-              Participantes ({group.members?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {group.members && group.members.length > 0 ? (
-              <ul className="divide-y divide-gray-100">
-                {group.members.map((member) => (
-                  <li key={member.user.id} className="p-4 hover:bg-gray-50 transition-colors flex flex-col gap-1">
-                    <span className="font-medium text-gray-900 truncate">{member.user.name || "Usuário sem nome"}</span>
-                    <span className="text-sm text-gray-500 truncate">{member.user.email}</span>
-                    {member.user.course && (
-                      <span className="text-xs text-indigo-600 font-medium mt-1 inline-flex w-fit px-2 py-0.5 rounded-full bg-indigo-50">
-                        {member.user.course}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="p-6 text-center text-gray-500">
-                <p>Nenhum participante ainda.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Content Area */}
-        <div className="md:col-span-2 space-y-6">
-          <Card className="shadow-sm border-gray-200/60 h-full min-h-[300px] flex flex-col items-center justify-center bg-gray-50/30">
-            <div className="text-center space-y-3 p-6">
-              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <BookOpen className="h-8 w-8 text-blue-500" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800">Mural do Grupo</h3>
-              <p className="text-gray-500 max-w-sm mx-auto">
-                Em breve você poderá postar mensagens, agendar eventos e compartilhar materiais de estudo aqui.
-              </p>
-            </div>
-          </Card>
+      <div className="space-y-4 h-[700px] flex flex-col">
+        {/* Tabs Header */}
+        <div className="flex bg-white rounded-xl shadow-sm border border-gray-200/60 p-1 shrink-0">
+          <button 
+            onClick={() => setActiveTab("posts")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${activeTab === "posts" ? "bg-blue-50 text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}
+          >
+            <MessageSquare className="h-4 w-4" />
+            <span className="hidden sm:inline">Mural de Mensagens</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab("events")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${activeTab === "events" ? "bg-blue-50 text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}
+          >
+            <Calendar className="h-4 w-4" />
+            <span className="hidden sm:inline">Eventos</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab("materials")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${activeTab === "materials" ? "bg-blue-50 text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}
+          >
+            <BookOpen className="h-4 w-4" />
+            <span className="hidden sm:inline">Materiais</span>
+          </button>
         </div>
-        
+
+        {/* Tab Content */}
+        <Card className="shadow-sm border-gray-200/60 flex-1 overflow-hidden bg-white flex flex-col">
+          {activeTab === "posts" && <PostsTab groupId={id} />}
+          {activeTab === "events" && <EventsTab groupId={id} />}
+          {activeTab === "materials" && <MaterialsTab groupId={id} />}
+        </Card>
       </div>
     </div>
   );
