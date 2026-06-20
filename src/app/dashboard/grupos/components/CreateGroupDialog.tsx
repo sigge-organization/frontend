@@ -20,10 +20,11 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
     university_course: "",
     description: "",
     modality: GroupModality.ONLINE,
+    password: "",
   });
 
   const resetForm = () => {
-    setFormData({ theme: "", university_course: "", description: "", modality: GroupModality.ONLINE });
+    setFormData({ theme: "", university_course: "", description: "", modality: GroupModality.ONLINE, password: "" });
   };
 
   const handleCreate = async () => {
@@ -32,11 +33,19 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
       return;
     }
     try {
-      await createMutation.mutateAsync(formData);
+      const dataToSubmit = {
+        theme: formData.theme,
+        university_course: formData.university_course,
+        description: formData.description,
+        modality: formData.modality,
+        ...(formData.password.trim() ? { password: formData.password } : {})
+      };
+      
+      await createMutation.mutateAsync(dataToSubmit);
       toast.success("Grupo de estudos criado com sucesso!");
       onOpenChange(false);
       resetForm();
-    } catch (error) {
+    } catch {
       toast.error("Erro ao criar o grupo.");
     }
   };
@@ -97,6 +106,16 @@ export function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Breve descrição dos objetivos..."
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="password">Senha para entrar (Opcional)</Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="Deixe em branco para grupo público"
             />
           </div>
         </div>

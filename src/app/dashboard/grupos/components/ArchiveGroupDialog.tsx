@@ -19,7 +19,7 @@ export function ArchiveGroupDialog({ group, open, onOpenChange }: ArchiveGroupDi
       await archiveMutation.mutateAsync(group.id);
       toast.success("Grupo arquivado com sucesso!");
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error("Erro ao arquivar o grupo.");
     }
   };

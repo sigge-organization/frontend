@@ -13,6 +13,7 @@ export interface StudyGroup {
   university_course?: string;
   description?: string;
   modality: GroupModality;
+  joinCode: string;
   created_at: string;
   _count?: {
     members: number;
@@ -27,8 +28,13 @@ export interface StudyGroup {
   }>;
 }
 
-export type CreateStudyGroupDTO = Omit<StudyGroup, 'id' | 'created_at' | '_count'>;
-export type UpdateStudyGroupDTO = Partial<CreateStudyGroupDTO>;
+export type CreateStudyGroupDTO = Omit<StudyGroup, 'id' | 'created_at' | '_count' | 'joinCode'> & { password?: string };
+export type UpdateStudyGroupDTO = Partial<Omit<CreateStudyGroupDTO, 'password'>>;
+
+export interface JoinStudyGroupDTO {
+  joinCode: string;
+  password?: string;
+}
 
 export function useStudyGroups() {
   return useQuery<StudyGroup[]>({
@@ -82,6 +88,19 @@ export function useArchiveStudyGroup() {
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await api.delete(`/student-groups/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["studyGroups"] });
+    },
+  });
+}
+
+export function useJoinStudyGroup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: JoinStudyGroupDTO) => {
+      const response = await api.post("/student-groups/join", data);
       return response.data;
     },
     onSuccess: () => {

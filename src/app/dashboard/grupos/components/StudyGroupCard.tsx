@@ -69,6 +69,11 @@ export function StudyGroupCard({ group, viewMode, onUpdate, onArchive }: StudyGr
               <Users className="h-4 w-4 text-blue-500" />
               <span><strong className="text-gray-900">{group._count?.members || 0}</strong> estudantes</span>
             </div>
+            {group.joinCode && (
+              <div className="flex items-center gap-1.5 text-sm text-gray-500 bg-blue-50/80 px-2.5 py-1 rounded-md border border-blue-100">
+                <span className="text-blue-700 font-semibold" title="Código para entrar no grupo">Código: {group.joinCode}</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </div>

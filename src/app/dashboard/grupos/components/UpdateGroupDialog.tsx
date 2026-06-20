@@ -48,7 +48,7 @@ export function UpdateGroupDialog({ group, open, onOpenChange }: UpdateGroupDial
       await updateMutation.mutateAsync({ id: group.id, data: formData });
       toast.success("Grupo de estudos atualizado com sucesso!");
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error("Erro ao atualizar o grupo.");
     }
   };
