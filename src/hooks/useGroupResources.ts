@@ -56,6 +56,18 @@ export function useCreateEvent() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["groupEvents", variables.groupId] });
+      queryClient.invalidateQueries({ queryKey: ["myAllEvents"] });
+    },
+  });
+}
+
+export function useMyAllEvents() {
+  // Retorna eventos + info do grupo
+  return useQuery<(GroupEvent & { group: { id: string; theme: string } })[]>({
+    queryKey: ["myAllEvents"],
+    queryFn: async () => {
+      const response = await api.get(`/student-groups/my/all-events`);
+      return response.data;
     },
   });
 }
@@ -106,6 +118,17 @@ export function useCreateMaterial() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["groupMaterials", variables.groupId] });
+      queryClient.invalidateQueries({ queryKey: ["myAllMaterials"] });
+    },
+  });
+}
+
+export function useMyAllMaterials() {
+  return useQuery<(GroupMaterial & { group: { id: string; theme: string } })[]>({
+    queryKey: ["myAllMaterials"],
+    queryFn: async () => {
+      const response = await api.get(`/student-groups/my/all-materials`);
+      return response.data;
     },
   });
 }

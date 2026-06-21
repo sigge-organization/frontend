@@ -89,12 +89,12 @@ export function PostsTab({ groupId }: { groupId: string }) {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-3 bg-white border-t border-gray-100 mt-auto relative z-10 shrink-0">
-        <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+      <div className="p-3 bg-white border-t border-gray-100 mt-auto relative z-10 shrink-0 w-full">
+        <form onSubmit={handleSubmit} className="flex gap-2 items-center w-full">
           <input 
             type="text" 
             placeholder="Digite uma mensagem..."
-            className="flex-1 rounded-full border border-gray-200 px-5 py-3 text-[15px] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-sm"
+            className="flex-1 min-w-0 w-full rounded-full border border-gray-200 px-4 py-3 text-[15px] bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-sm"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             disabled={createPost.isPending}
@@ -104,7 +104,7 @@ export function PostsTab({ groupId }: { groupId: string }) {
             disabled={!content.trim() || createPost.isPending} 
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-12 h-12 p-0 flex items-center justify-center shrink-0 shadow-sm transition-colors"
           >
-            {createPost.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 ml-1" />}
+            {createPost.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
           </Button>
         </form>
       </div>

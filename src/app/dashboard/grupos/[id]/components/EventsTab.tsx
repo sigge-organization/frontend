@@ -64,22 +64,24 @@ export function EventsTab({ groupId }: { groupId: string }) {
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-end items-start sm:items-center gap-3">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="flex bg-gray-200/60 p-1 rounded-md">
-            <button 
-              onClick={() => setViewMode("list")}
-              className={cn("p-1.5 rounded-sm transition-colors", viewMode === "list" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-800")}
-              title="Ver em Lista"
-            >
-              <List className="h-4 w-4" />
-            </button>
-            <button 
-              onClick={() => setViewMode("calendar")}
-              className={cn("p-1.5 rounded-sm transition-colors", viewMode === "calendar" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-800")}
-              title="Ver no Calendário"
-            >
-              <CalendarDays className="h-4 w-4" />
-            </button>
-          </div>
+          {events && events.length > 0 && (
+            <div className="flex bg-gray-200/60 p-1 rounded-md">
+              <button 
+                onClick={() => setViewMode("list")}
+                className={cn("p-1.5 rounded-sm transition-colors", viewMode === "list" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-800")}
+                title="Ver em Lista"
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button 
+                onClick={() => setViewMode("calendar")}
+                className={cn("p-1.5 rounded-sm transition-colors", viewMode === "calendar" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-800")}
+                title="Ver no Calendário"
+              >
+                <CalendarDays className="h-4 w-4" />
+              </button>
+            </div>
+          )}
           <Dialog open={isCreating} onOpenChange={setIsCreating}>
             <DialogTrigger className={cn(buttonVariants({ variant: "outline", size: "sm" }), "text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer ml-auto sm:ml-0")}>
               <Plus className="h-4 w-4 mr-1" /> Novo Evento
@@ -154,8 +156,20 @@ export function EventsTab({ groupId }: { groupId: string }) {
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
-        {viewMode === "calendar" ? (
-          <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm flex flex-col">
+        {isLoading ? (
+          <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-blue-500" /></div>
+        ) : !events || events.length === 0 ? (
+          <div className="text-center py-12 text-gray-500 flex flex-col items-center justify-center h-full">
+            <div className="bg-blue-50/50 p-5 rounded-full mb-4 border border-blue-100/50">
+              <Calendar className="h-10 w-10 text-blue-300" />
+            </div>
+            <p className="text-gray-700 font-semibold text-lg">Nenhum evento agendado</p>
+            <p className="text-sm mt-2 text-gray-500 max-w-sm">Este grupo ainda não possui nenhum compromisso agendado.</p>
+          </div>
+        ) : (
+          <>
+            {/* VIEW: CALENDAR */}
+            <div className={cn("bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm flex-col", viewMode === "calendar" ? "flex" : "hidden")}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50">
               <h4 className="font-semibold text-gray-800 capitalize">
                 {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
@@ -173,8 +187,8 @@ export function EventsTab({ groupId }: { groupId: string }) {
               </div>
             </div>
             
-            <div className="overflow-x-auto">
-              <div className="min-w-[600px] flex flex-col">
+            <div className="overflow-x-auto pb-2">
+              <div className="w-full min-w-[300px] md:min-w-[800px] flex flex-col">
                 <div className="grid grid-cols-7 border-b border-gray-100 bg-white">
                   {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
                     <div key={day} className="py-2 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">
@@ -183,7 +197,7 @@ export function EventsTab({ groupId }: { groupId: string }) {
                   ))}
                 </div>
                 
-                <div className="grid grid-cols-7 auto-rows-[minmax(90px,auto)] bg-gray-100 gap-[1px]">
+                <div className="grid grid-cols-7 auto-rows-[minmax(60px,auto)] md:auto-rows-[minmax(120px,auto)] bg-gray-100 gap-[1px]">
               {calendarDays.map((day, idx) => {
                 const dayEvents = events?.filter(e => isSameDay(new Date(e.date_time_event), day)) || [];
                 const isCurrentMonth = isSameMonth(day, currentMonth);
@@ -195,14 +209,26 @@ export function EventsTab({ groupId }: { groupId: string }) {
                     onClick={() => {
                       if (dayEvents.length > 0) setSelectedDayEvents({ date: day, events: dayEvents });
                     }}
-                    className={cn("bg-white p-1.5 flex flex-col gap-1.5 transition-colors hover:bg-gray-50", !isCurrentMonth && "bg-gray-50/50", dayEvents.length > 0 && "cursor-pointer")}
+                    className={cn("bg-white p-1 md:p-2 flex flex-col transition-colors", !isCurrentMonth && "bg-gray-50/50", dayEvents.length > 0 && "cursor-pointer hover:bg-blue-50/30")}
                   >
-                    <div className="flex justify-between items-start">
-                      <span className={cn("text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full", isToday ? "bg-blue-600 text-white" : (isCurrentMonth ? "text-gray-700" : "text-gray-400"))}>
+                    <div className="flex justify-center md:justify-between items-start">
+                      <span className={cn("text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full shrink-0", isToday ? "bg-blue-600 text-white" : (isCurrentMonth ? "text-gray-700" : "text-gray-400"))}>
                         {format(day, "d")}
                       </span>
                     </div>
-                    <div className="flex flex-col gap-1 overflow-y-auto max-h-[80px] scrollbar-thin scrollbar-thumb-gray-200">
+
+                    {/* MOBILE DOTS */}
+                    {dayEvents.length > 0 && (
+                      <div className="flex md:hidden flex-wrap justify-center gap-1 mt-1">
+                        {dayEvents.slice(0, 3).map((_, i) => (
+                          <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                        ))}
+                        {dayEvents.length > 3 && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-50" />}
+                      </div>
+                    )}
+
+                    {/* DESKTOP TEXT */}
+                    <div className="hidden md:flex flex-col gap-1 overflow-y-auto max-h-[80px] scrollbar-thin scrollbar-thumb-gray-200 mt-1">
                       {dayEvents.map(evt => {
                         const isLink = evt.local_or_link_event.startsWith('http');
                         return (
@@ -220,17 +246,10 @@ export function EventsTab({ groupId }: { groupId: string }) {
           </div>
         </div>
         </div>
-        ) : (
-          <div className="space-y-3">
-            {isLoading ? (
-              <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-blue-500" /></div>
-            ) : events?.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 flex flex-col items-center">
-                <Calendar className="h-10 w-10 text-gray-300 mb-3" />
-                <p>Nenhum evento agendado no grupo.</p>
-              </div>
-            ) : (
-              events?.map((event) => {
+
+        {/* VIEW: LIST */}
+        <div className={cn("space-y-3", viewMode === "list" ? "block" : "hidden")}>
+              {events?.map((event) => {
                 const isLink = event.local_or_link_event.startsWith('http');
               return (
               <div key={event.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex items-start gap-4">
@@ -255,10 +274,11 @@ export function EventsTab({ groupId }: { groupId: string }) {
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
-      )}
+          })}
+        </div>
+      </>
+    )}
+  </div>
 
       {/* Modal de Detalhes do Dia */}
       <Dialog open={!!selectedDayEvents} onOpenChange={(open) => !open && setSelectedDayEvents(null)}>
@@ -294,6 +314,5 @@ export function EventsTab({ groupId }: { groupId: string }) {
         </DialogContent>
       </Dialog>
     </div>
-  </div>
   );
 }

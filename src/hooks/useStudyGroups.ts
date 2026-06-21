@@ -137,3 +137,49 @@ export function useJoinStudyGroup() {
     },
   });
 }
+
+export interface WeeklyEvent {
+  id: string;
+  title: string;
+  date_time_event: string;
+  local_or_link_event: string;
+  group: {
+    id: string;
+    theme: string;
+  };
+}
+
+export interface RecentMaterial {
+  id: string;
+  title: string;
+  external_url: string;
+  created_at: string;
+  group: {
+    id: string;
+    theme: string;
+  };
+  uploadedBy: {
+    id: string;
+    name: string;
+  };
+}
+
+export function useMyWeeklyEvents() {
+  return useQuery<WeeklyEvent[]>({
+    queryKey: ["myWeeklyEvents"],
+    queryFn: async () => {
+      const response = await api.get("/student-groups/my/weekly-events");
+      return response.data;
+    },
+  });
+}
+
+export function useMyRecentMaterials() {
+  return useQuery<RecentMaterial[]>({
+    queryKey: ["myRecentMaterials"],
+    queryFn: async () => {
+      const response = await api.get("/student-groups/my/recent-materials");
+      return response.data;
+    },
+  });
+}

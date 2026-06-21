@@ -78,10 +78,13 @@ export function MaterialsTab({ groupId }: { groupId: string }) {
       <div className="flex-1 p-4 overflow-y-auto space-y-3">
         {isLoading ? (
           <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-blue-500" /></div>
-        ) : materials?.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 flex flex-col items-center">
-            <FileText className="h-10 w-10 text-gray-300 mb-3" />
-            <p>Nenhum material compartilhado.</p>
+        ) : !materials || materials.length === 0 ? (
+          <div className="text-center py-12 text-gray-500 flex flex-col items-center justify-center h-full">
+            <div className="bg-blue-50/50 p-5 rounded-full mb-4 border border-blue-100/50">
+              <FileText className="h-10 w-10 text-blue-300" />
+            </div>
+            <p className="text-gray-700 font-semibold text-lg">Nenhum material encontrado</p>
+            <p className="text-sm mt-2 text-gray-500 max-w-sm">Este grupo ainda não possui nenhum material compartilhado.</p>
           </div>
         ) : (
           materials?.map((material) => (
