@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/services/api";
 
 export interface UserProfile {
-  id: number;
+  id: string;
   name: string;
   email: string;
   course?: string;

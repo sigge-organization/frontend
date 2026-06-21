@@ -8,6 +8,11 @@ export interface GroupEvent {
   title: string;
   date_time_event: string;
   local_or_link_event: string;
+  createdBy?: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
 }
 
 export interface GroupPost {
@@ -61,6 +66,33 @@ export function useCreateEvent() {
   });
 }
 
+export function useUpdateEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, eventId, data }: { groupId: string; eventId: string; data: Partial<Omit<GroupEvent, "id" | "studentGroupId">> }) => {
+      const response = await api.put(`/student-groups/${groupId}/events/${eventId}`, data);
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["groupEvents", variables.groupId] });
+      queryClient.invalidateQueries({ queryKey: ["myAllEvents"] });
+    },
+  });
+}
+
+export function useDeleteEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, eventId }: { groupId: string; eventId: string }) => {
+      await api.delete(`/student-groups/${groupId}/events/${eventId}`);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["groupEvents", variables.groupId] });
+      queryClient.invalidateQueries({ queryKey: ["myAllEvents"] });
+    },
+  });
+}
+
 export function useMyAllEvents() {
   // Retorna eventos + info do grupo
   return useQuery<(GroupEvent & { group: { id: string; theme: string } })[]>({
@@ -101,11 +133,15 @@ export function useCreatePost() {
 
 // -- MATERIALS HOOKS --
 export function useGroupMaterials(groupId: string) {
-  return useQuery<GroupMaterial[]>({
+  return useInfiniteQuery({
     queryKey: ["groupMaterials", groupId],
-    queryFn: async () => {
-      const response = await api.get(`/student-groups/${groupId}/materials`);
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await api.get(`/student-groups/${groupId}/materials?page=${pageParam}&limit=20`);
       return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: GroupMaterial[], allPages) => {
+      return lastPage.length === 20 ? allPages.length + 1 : undefined;
     },
     enabled: !!groupId,
   });
@@ -117,6 +153,33 @@ export function useCreateMaterial() {
     mutationFn: async ({ groupId, title, external_url }: { groupId: string; title: string; external_url: string }) => {
       const response = await api.post(`/student-groups/${groupId}/materials`, { title, external_url });
       return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["groupMaterials", variables.groupId] });
+      queryClient.invalidateQueries({ queryKey: ["myAllMaterials"] });
+    },
+  });
+}
+
+export function useUpdateMaterial() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, materialId, title, external_url }: { groupId: string; materialId: string; title?: string; external_url?: string }) => {
+      const response = await api.put(`/student-groups/${groupId}/materials/${materialId}`, { title, external_url });
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["groupMaterials", variables.groupId] });
+      queryClient.invalidateQueries({ queryKey: ["myAllMaterials"] });
+    },
+  });
+}
+
+export function useDeleteMaterial() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, materialId }: { groupId: string; materialId: string }) => {
+      await api.delete(`/student-groups/${groupId}/materials/${materialId}`);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["groupMaterials", variables.groupId] });
