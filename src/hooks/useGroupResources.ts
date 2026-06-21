@@ -189,11 +189,15 @@ export function useDeleteMaterial() {
 }
 
 export function useMyAllMaterials() {
-  return useQuery<(GroupMaterial & { group: { id: string; theme: string } })[]>({
+  return useInfiniteQuery({
     queryKey: ["myAllMaterials"],
-    queryFn: async () => {
-      const response = await api.get(`/student-groups/my/all-materials`);
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await api.get(`/student-groups/my/all-materials?page=${pageParam}&limit=20`);
       return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: (GroupMaterial & { group: { id: string; theme: string } })[], allPages) => {
+      return lastPage.length === 20 ? allPages.length + 1 : undefined;
     },
   });
 }
