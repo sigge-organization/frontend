@@ -12,9 +12,15 @@ import { useUpdateProfile, UserProfile } from "@/hooks/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 
 const profileSchema = z.object({
-  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres."),
+  name: z
+    .string()
+    .min(3, "O nome deve ter pelo menos 3 caracteres.")
+    .max(100, "O nome deve ter no máximo 100 caracteres."),
   email: z.string().email("Digite um e-mail válido."),
-  course: z.string().optional(),
+  course: z
+    .string()
+    .max(100, "O curso deve ter no máximo 100 caracteres.")
+    .optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -82,6 +88,7 @@ export function ProfileForm({ user, onCancel }: ProfileFormProps) {
             placeholder="Ex: João da Silva"
             className={`rounded-lg h-12 ${errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={updateProfileMutation.isPending}
+            maxLength={100}
             {...register("name")}
           />
           {errors.name && (
@@ -111,6 +118,7 @@ export function ProfileForm({ user, onCancel }: ProfileFormProps) {
             placeholder="Ex: Engenharia de Software"
             className={`rounded-lg h-12 ${errors.course ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={updateProfileMutation.isPending}
+            maxLength={100}
             {...register("course")}
           />
           {errors.course && (
