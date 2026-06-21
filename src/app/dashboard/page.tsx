@@ -35,27 +35,6 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-6">
-          <h3 className="font-semibold text-lg mb-2 text-gray-700">Seu Perfil</h3>
-          <p className="text-sm text-gray-500">Gerencie suas informações e configurações pessoais.</p>
-        </Card>
-        
-        <Card className="p-6">
-          <h3 className="font-semibold text-lg mb-2 text-gray-700">Próximos Eventos</h3>
-          <p className="text-sm text-gray-500">Confira o calendário para não perder nenhuma reunião.</p>
-        </Card>
-        
-        <Card className="p-6">
-          <h3 className="font-semibold text-lg mb-2 text-gray-700">Meus Grupos</h3>
-          <p className="text-sm text-gray-500">Acompanhe as atividades e discussões das suas equipes.</p>
-        </Card>
-        
-        <Card className="p-6">
-          <h3 className="font-semibold text-lg mb-2 text-gray-700">Materiais</h3>
-          <p className="text-sm text-gray-500">Acesse apostilas, documentos e treinamentos importantes.</p>
-        </Card>
-      </div>
 
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
@@ -69,9 +48,9 @@ export default function DashboardPage() {
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
           </div>
         ) : recentGroups && recentGroups.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-thin scrollbar-thumb-gray-200">
             {recentGroups.map(group => (
-              <Card key={group.id} className="p-5 flex flex-col gap-3 hover:shadow-md transition-shadow border-l-4 border-l-blue-600">
+              <Card key={group.id} className="min-w-[300px] snap-start p-5 flex flex-col gap-3 hover:shadow-md transition-shadow border-l-4 border-l-blue-600">
                 <div className="flex justify-between items-start">
                   <h3 className="font-bold text-gray-900 line-clamp-1">{group.theme}</h3>
                   <div className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
