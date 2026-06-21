@@ -12,12 +12,16 @@ import { io } from "socket.io-client";
 import { cn } from "@/lib/utils";
 
 export function PostsTab({ groupId }: { groupId: string }) {
-  const { data: posts, isLoading } = useGroupPosts(groupId);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGroupPosts(groupId);
+  const posts = data?.pages.flatMap((page) => page.posts) || [];
   const { data: user } = useUserProfile();
   const createPost = useCreatePost();
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const prevScrollHeight = useRef<number>(0);
+  const isNearBottom = useRef<boolean>(true);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333");
@@ -34,8 +38,30 @@ export function PostsTab({ groupId }: { groupId: string }) {
   }, [groupId, queryClient]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [posts]);
+    if (prevScrollHeight.current === 0) {
+      if (isNearBottom.current) {
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    } else if (containerRef.current) {
+      const newScrollHeight = containerRef.current.scrollHeight;
+      containerRef.current.scrollTop = newScrollHeight - prevScrollHeight.current;
+      prevScrollHeight.current = 0; // reset for next messages
+    }
+  }, [posts.length]);
+
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    isNearBottom.current = scrollHeight - scrollTop - clientHeight < 100;
+
+    if (scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
+      prevScrollHeight.current = scrollHeight;
+      fetchNextPage();
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,14 +70,21 @@ export function PostsTab({ groupId }: { groupId: string }) {
     createPost.mutate(
       { groupId, content },
       {
-        onSuccess: () => setContent("")
+        onSuccess: () => {
+          setContent("");
+          isNearBottom.current = true;
+        }
       }
     );
   };
 
   return (
     <div className="flex flex-col h-[600px] bg-gray-50/50 relative rounded-b-xl overflow-hidden">
-      <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3 relative z-10 scrollbar-thin scrollbar-thumb-gray-200">
+      <div 
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="flex-1 p-4 overflow-y-auto flex flex-col gap-3 relative z-10 scrollbar-thin scrollbar-thumb-gray-200"
+      >
         {isLoading ? (
           <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-gray-500" /></div>
         ) : posts?.length === 0 ? (
@@ -61,7 +94,27 @@ export function PostsTab({ groupId }: { groupId: string }) {
             <p className="text-sm">Seja o primeiro a puxar assunto no grupo!</p>
           </div>
         ) : (
-          [...(posts || [])].reverse().map((post) => {
+          <>
+            {hasNextPage && (
+              <div className="flex justify-center p-2">
+                {isFetchingNextPage ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      if (containerRef.current) prevScrollHeight.current = containerRef.current.scrollHeight;
+                      fetchNextPage();
+                    }} 
+                    className="text-xs text-gray-500"
+                  >
+                    Carregar mensagens antigas
+                  </Button>
+                )}
+              </div>
+            )}
+            {[...(posts || [])].reverse().map((post) => {
             const isMe = user?.id && String(post.author?.id) === String(user.id);
             return (
               <div 
@@ -84,7 +137,8 @@ export function PostsTab({ groupId }: { groupId: string }) {
                 </span>
               </div>
             );
-          })
+          })}
+          </>
         )}
         <div ref={messagesEndRef} />
       </div>

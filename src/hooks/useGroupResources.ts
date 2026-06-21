@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { api } from "@/services/api";
 
 // -- TYPES --
@@ -74,12 +74,14 @@ export function useMyAllEvents() {
 
 // -- POSTS HOOKS --
 export function useGroupPosts(groupId: string) {
-  return useQuery<GroupPost[]>({
+  return useInfiniteQuery({
     queryKey: ["groupPosts", groupId],
-    queryFn: async () => {
-      const response = await api.get(`/student-groups/${groupId}/posts`);
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await api.get(`/student-groups/${groupId}/posts?page=${pageParam}&limit=20`);
       return response.data;
     },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
     enabled: !!groupId,
   });
 }
