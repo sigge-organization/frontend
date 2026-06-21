@@ -18,7 +18,7 @@ interface SignupFormProps {
 }
 
 const signupSchema = z.object({
-  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres."),
+  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres.").max(100, "O nome deve ter no máximo 100 caracteres."),
   email: z.string().min(1, "O e-mail é obrigatório.").email("Digite um e-mail válido."),
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
   passwordRepeat: z.string().min(1, "A confirmação de senha é obrigatória."),
@@ -83,6 +83,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
             type="text"
             className={`rounded-lg h-11 ${errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}`}
             disabled={registerMutation.isPending}
+            maxLength={100}
             {...register("name")}
           />
           {errors.name && (
