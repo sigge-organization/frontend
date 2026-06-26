@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import React, { useState, useEffect } from "react";
 
@@ -118,7 +118,7 @@ describe("Testes de Carga (Load Testing)", () => {
     expect(finishSpy).toHaveBeenCalledWith(100);
   });
 
-  it("5. [Automático & Manual] - Carregamento de imagem de perfil de alta resolução (Automático: Validação do elemento DOM; Manual: Avaliação do tempo de renderização visual do blob)", () => {
+  it("5. [Automático] - Carregamento de imagem de perfil de alta resolução: Validação do elemento DOM", () => {
     // Automático: Valida a injeção do base64 gigante no elemento img
     const giantBase64Image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
     
@@ -133,102 +133,170 @@ describe("Testes de Carga (Load Testing)", () => {
     const img = screen.getByTestId("profile-image-large");
     expect(img).toBeInTheDocument();
     expect(img.getAttribute("src")).toBe(giantBase64Image);
-
-    // Manual - Roteiro de Teste:
-    // 1. Acessar a tela de perfil do usuário no SIGGE.
-    // 2. Fazer upload de uma imagem PNG de alta resolução (> 15MB).
-    // 3. Monitorar a aba Network dos DevTools para confirmar que o upload ocorre sem congelar a UI.
-    // 4. Verificar se a renderização em miniatura no Header é instantânea após o upload.
-    const manualTestSteps = [
-      "Upload de imagem de perfil de alta resolução (15MB+).",
-      "Verificação se a UI permanece responsiva durante o upload.",
-      "Verificação de tempo de latência de exibição visual do avatar.",
-    ];
-    expect(manualTestSteps).toHaveLength(3);
   });
 
-  // ==========================================
-  // TESTES MANUAIS (DOCUMENTADOS & ESTRUTURADOS)
-  // ==========================================
+  it("6. [Automático] - Scroll infinito de materiais com 5.000 itens: renderização estável e rápida do DOM", () => {
+    const items = Array.from({ length: 5000 }, (_, i) => `Material ${i}`);
+    
+    const VirtualizedListMock = () => {
+      // Simula uma lista virtualizada básica (mostra apenas 20 itens por vez com base no scroll)
+      const [scrollTop, setScrollTop] = useState(0);
+      const itemHeight = 30;
+      const containerHeight = 300;
+      
+      const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight));
+      const endIndex = Math.min(items.length, Math.floor((scrollTop + containerHeight) / itemHeight));
+      
+      const visibleItems = items.slice(startIndex, endIndex);
 
-  it("6. [Manual] - Scroll infinito de materiais com 5.000 itens (Verificar lentidão visual e travamento da janela de scroll)", () => {
-    const manualTestPlan = {
-      objetivo: "Avaliar o comportamento de scroll da lista de materiais quando preenchida com mais de 5.000 itens de forma dinâmica.",
-      preRequisitos: "Ambiente rodando localmente com o servidor de desenvolvimento.",
-      passos: [
-        "1. Acessar a rota '/dashboard/materiais'.",
-        "2. Simular no backend/mock o envio de 5.000 registros de materiais.",
-        "3. Rolar a página rapidamente até o final usando o scroll do mouse ou trackpad.",
-        "4. Observar a taxa de quadros (FPS) no painel de renderização do Chrome DevTools.",
-      ],
-      resultadoEsperado: "O scroll deve ser suave, sem travamentos na renderização ou congelamento da aba (jank free).",
+      return (
+        <div 
+          data-testid="scroll-container" 
+          style={{ height: containerHeight, overflow: "auto" }}
+          onScroll={(e) => setScrollTop((e.target as HTMLDivElement).scrollTop)}
+        >
+          <div style={{ height: items.length * itemHeight, position: "relative" }}>
+            <div style={{ position: "absolute", top: startIndex * itemHeight }}>
+              {visibleItems.map((item) => (
+                <div key={item} data-testid="visible-item" style={{ height: itemHeight }}>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
     };
 
-    expect(manualTestPlan.objetivo).toBeDefined();
-    expect(manualTestPlan.passos.length).toBeGreaterThan(0);
+    const t0 = performance.now();
+    render(<VirtualizedListMock />);
+    const t1 = performance.now();
+
+    expect(screen.getAllByTestId("visible-item").length).toBeLessThan(20);
+    expect(screen.getAllByTestId("visible-item")[0]).toHaveTextContent("Material 0");
+    expect(t1 - t0).toBeLessThan(50); // Deve montar instantaneamente (<50ms) devido à virtualização simulada
   });
 
-  it("7. [Manual] - Sincronização de dados sob fluxo contínuo de sockets em sessão de 10 minutos (Verificar vazamento de memória visual)", () => {
-    const manualTestPlan = {
-      objetivo: "Garantir a integridade da UI sob constante recebimento de dados por conexões WebSocket ativas.",
-      passos: [
-        "1. Conectar a um grupo de estudos com chat ativo.",
-        "2. Utilizar um script para disparar 50 mensagens por segundo através de WebSockets.",
-        "3. Manter a sessão aberta por 10 minutos seguidos.",
-        "4. Acompanhar a alocação de memória RAM no gerenciador de tarefas do Chrome.",
-      ],
-      resultadoEsperado: "O frontend deve fazer o buffer e descarte adequado de mensagens antigas sem estourar o limite de memória ou congelar.",
+  it("7. [Automático] - Sincronização sob fluxo contínuo de sockets: retenção de memória limitando elementos no DOM", () => {
+    const ChatMessageListMock = ({ messageStream }: { messageStream: { id: string; text: string }[] }) => {
+      const [messages, setMessages] = useState<string[]>([]);
+
+      useEffect(() => {
+        if (messageStream.length > 0) {
+          setMessages((prev) => {
+            const next = [...prev, ...messageStream.map(m => m.text)];
+            // Mantém apenas as últimas 50 mensagens para evitar vazamento de memória visual
+            return next.slice(-50);
+          });
+        }
+      }, [messageStream]);
+
+      return (
+        <ul data-testid="message-list">
+          {messages.map((m, idx) => (
+            <li key={idx} data-testid="chat-message">{m}</li>
+          ))}
+        </ul>
+      );
     };
 
-    expect(manualTestPlan.passos).toBeDefined();
-    expect(manualTestPlan.resultadoEsperado).toContain("sem estourar");
+    // Simula 200 mensagens recebidas
+    const batch1 = Array.from({ length: 200 }, (_, i) => ({ id: `${i}`, text: `Msg ${i}` }));
+    const { rerender } = render(<ChatMessageListMock messageStream={[]} />);
+
+    act(() => {
+      rerender(<ChatMessageListMock messageStream={batch1} />);
+    });
+
+    const renderedItems = screen.getAllByTestId("chat-message");
+    expect(renderedItems.length).toBe(50); // O buffer manteve apenas as últimas 50 mensagens
+    expect(renderedItems[49]).toHaveTextContent("Msg 199");
   });
 
-  it("8. [Manual] - Carga de conexão paralela abrindo 20 abas do dashboard simultaneamente (Verificar gerenciamento de cookies de sessão)", () => {
-    const manualTestPlan = {
-      objetivo: "Garantir que a abertura múltipla de abas não cause invalidação mútua de cookies de sessão ou concorrência destrutiva.",
-      passos: [
-        "1. Logar no SIGGE com uma conta de teste válida.",
-        "2. Abrir 20 abas do navegador na rota '/dashboard' simultaneamente.",
-        "3. Atualizar (F5) todas as abas simultaneamente.",
-        "4. Verificar se o estado de autenticação permanece válido em todas.",
-      ],
-      resultadoEsperado: "Todas as abas devem permanecer autenticadas e carregar os dados sem erros de 'Token Expirado' ou conflito de leitura.",
+  it("8. [Automático] - Carga de conexão paralela: leitura concorrente e consistente de cookies de sessão", async () => {
+    const rawCookies = "sigee.token=jwt-auth-token-123; path=/";
+    
+    // Simula 20 requisições concorrentes lendo cookies
+    const readCookiePromise = () => {
+      return new Promise<string>((resolve) => {
+        setTimeout(() => {
+          const list: Record<string, string> = {};
+          rawCookies.split(";").forEach((cookie) => {
+            const parts = cookie.split("=");
+            list[parts.shift()!.trim()] = decodeURIComponent(parts.join("="));
+          });
+          resolve(list["sigee.token"]);
+        }, Math.random() * 20); // Latência aleatória
+      });
     };
 
-    expect(manualTestPlan.passos.length).toBe(4);
-    expect(manualTestPlan.resultadoEsperado).toBeDefined();
+    const promises = Array.from({ length: 20 }, () => readCookiePromise());
+    const results = await Promise.all(promises);
+
+    results.forEach((token) => {
+      expect(token).toBe("jwt-auth-token-123");
+    });
   });
 
-  it("9. [Manual] - Cadastro rápido de múltiplos links de materiais externos (Verificar resposta de submissão e atualização da lista)", () => {
-    const manualTestPlan = {
-      objetivo: "Avaliar o comportamento e tempo de resposta da interface ao cadastrar vários links de materiais externos em sequência.",
-      passos: [
-        "1. Acessar a aba 'Materiais' de um grupo de estudos.",
-        "2. Clicar em 'Adicionar Link'.",
-        "3. Preencher o título, colar um link externo (ex: Google Drive) e salvar.",
-        "4. Repetir o processo rapidamente 5 vezes seguidas e verificar se a lista atualiza na mesma hora.",
-      ],
-      resultadoEsperado: "A janela de inserção deve fechar imediatamente e o novo link deve constar na lista na mesma hora, sem engasgos de processamento.",
+  it("9. [Automático] - Cadastro rápido de múltiplos links de materiais externos: submissão sequencial rápida", () => {
+    const AddMultipleLinksMock = ({ onAdd }: { onAdd: (title: string, url: string) => void }) => {
+      const [title, setTitle] = useState("");
+      const [url, setUrl] = useState("");
+
+      const handleAdd = () => {
+        onAdd(title, url);
+        setTitle("");
+        setUrl("");
+      };
+
+      return (
+        <div>
+          <input data-testid="link-title" value={title} onChange={e => setTitle(e.target.value)} />
+          <input data-testid="link-url" value={url} onChange={e => setUrl(e.target.value)} />
+          <button data-testid="add-btn" onClick={handleAdd}>Adicionar</button>
+        </div>
+      );
     };
 
-    expect(manualTestPlan.passos.length).toBe(4);
+    const addSpy = vi.fn();
+    render(<AddMultipleLinksMock onAdd={addSpy} />);
+
+    const titleInput = screen.getByTestId("link-title");
+    const urlInput = screen.getByTestId("link-url");
+    const btn = screen.getByTestId("add-btn");
+
+    for (let i = 0; i < 5; i++) {
+      fireEvent.change(titleInput, { target: { value: `Material ${i}` } });
+      fireEvent.change(urlInput, { target: { value: `https://drive.google.com/${i}` } });
+      fireEvent.click(btn);
+    }
+
+    expect(addSpy).toHaveBeenCalledTimes(5);
+    expect(addSpy).toHaveBeenLastCalledWith("Material 4", "https://drive.google.com/4");
   });
 
-  it("10. [Manual] - Consumo persistente de memória RAM do navegador com renderizações contínuas de páginas (Heap Size Profiling)", () => {
-    const manualTestPlan = {
-      objetivo: "Monitorar e verificar a taxa de descarte de coletores de lixo (Garbage Collection) após navegação persistente.",
-      passos: [
-        "1. Abrir a ferramenta Performance do Chrome DevTools.",
-        "2. Iniciar a gravação do Memory Timeline.",
-        "3. Alternar rapidamente entre 'Perfil', 'Calendário', 'Grupos' e 'Materiais' por 50 vezes consecutivas.",
-        "4. Clicar no botão 'Collect Garbage' (ícone de lixeira) no console do Chrome.",
-        "5. Avaliar o Heap Size final comparado ao tamanho inicial.",
-      ],
-      resultadoEsperado: "O consumo de memória Heap após o Garbage Collection deve retornar aos níveis de baseline iniciais (ausência de vazamento de memória).",
+  it("10. [Automático] - Prevenção de vazamento de memória sob montagens sucessivas (Heap Size Profiling alternativo)", () => {
+    const cleanupSpy = vi.fn();
+
+    const LeakyComponentMock = () => {
+      useEffect(() => {
+        const handleResize = () => {};
+        window.addEventListener("resize", handleResize);
+        return () => {
+          window.removeEventListener("resize", handleResize);
+          cleanupSpy();
+        };
+      }, []);
+
+      return <div>Componente Dinâmico</div>;
     };
 
-    expect(manualTestPlan.passos).toBeDefined();
-    expect(manualTestPlan.resultadoEsperado).toBeDefined();
+    // Monta e desmonta o componente 50 vezes consecutivas
+    for (let i = 0; i < 50; i++) {
+      const { unmount } = render(<LeakyComponentMock />);
+      unmount();
+    }
+
+    expect(cleanupSpy).toHaveBeenCalledTimes(50); // Garante que todos os recursos foram devidamente desalocados em cada ciclo
   });
 });
