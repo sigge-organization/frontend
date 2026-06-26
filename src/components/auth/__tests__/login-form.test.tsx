@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LoginForm } from "../login-form";
 import Cookies from "js-cookie";
@@ -29,6 +29,10 @@ const queryClient = new QueryClient();
 
 describe("LoginForm", () => {
   const onToggleModeMock = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   const renderComponent = () => {
     return render(
@@ -82,12 +86,25 @@ describe("LoginForm", () => {
     fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith("/api/auth/login", {
+      expect(api.post).toHaveBeenCalledWith("/users/login", {
         email: "test@example.com",
         password: "123456",
       });
       expect(Cookies.set).toHaveBeenCalledWith("sigee.token", "fake-jwt-token", { expires: 1 });
       expect(pushMock).toHaveBeenCalledWith("/dashboard");
+    });
+  });
+
+  it("should not call api if email is invalid", async () => {
+    renderComponent();
+    
+    fireEvent.change(screen.getByLabelText(/digite seu e-mail/i), { target: { value: "invalid-email" } });
+    fireEvent.change(screen.getByLabelText(/digite sua senha/i), { target: { value: "123456" } });
+    
+    fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
+
+    await waitFor(() => {
+      expect(api.post).not.toHaveBeenCalled();
     });
   });
 });

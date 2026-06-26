@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SignupForm } from "../signup-form";
 import { api } from "@/services/api";
@@ -15,6 +15,10 @@ const queryClient = new QueryClient();
 
 describe("SignupForm", () => {
   const onToggleModeMock = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   const renderComponent = () => {
     return render(
@@ -70,12 +74,27 @@ describe("SignupForm", () => {
     fireEvent.click(screen.getByRole("button", { name: /cadastrar/i }));
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith("/api/auth/register", {
-        username: "Test User",
+      expect(api.post).toHaveBeenCalledWith("/users/register", {
+        name: "Test User",
         email: "test@example.com",
         password: "123456",
       });
       expect(onToggleModeMock).toHaveBeenCalled();
+    });
+  });
+
+  it("should not call api if passwords do not match", async () => {
+    renderComponent();
+    
+    fireEvent.change(screen.getByLabelText(/digite seu nome/i), { target: { value: "Test User" } });
+    fireEvent.change(screen.getByLabelText(/digite seu e-mail/i), { target: { value: "test@example.com" } });
+    fireEvent.change(screen.getByLabelText(/^digite sua senha$/i), { target: { value: "123456" } });
+    fireEvent.change(screen.getByLabelText(/repita sua senha/i), { target: { value: "654321" } });
+    
+    fireEvent.click(screen.getByRole("button", { name: /cadastrar/i }));
+
+    await waitFor(() => {
+      expect(api.post).not.toHaveBeenCalled();
     });
   });
 });
